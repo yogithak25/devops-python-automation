@@ -25,7 +25,7 @@ def is_nexus_service_created():
 # INSTALL NEXUS
 # -----------------------------
 def install_nexus():
-    print("\n📦 Installing Nexus (Non-Docker)...\n")
+    print("\n📦 Installing Nexus ...\n")
 
     # -----------------------------
     # 1. Java Check

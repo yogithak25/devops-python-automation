@@ -21,7 +21,7 @@ def is_service_created():
 # INSTALL SONARQUBE
 # -----------------------------
 def install_sonarqube():
-    print("\n📊 Installing SonarQube (Non-Docker)...\n")
+    print("\n📊 Installing SonarQube ...\n")
 
     # -----------------------------
     # 1. System Config (REQUIRED)

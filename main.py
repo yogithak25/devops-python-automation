@@ -9,8 +9,25 @@ from installer.nexus import install_nexus
 from installer.trivy import install_trivy
 from installer.argocd import install_argocd
 
+# -----------------------------
+# CONFIG IMPORTS (NEW)
+# -----------------------------
+from config.sonarqube_config import setup_sonarqube
+from config.nexus_config import setup_nexus
+from config.jenkins_config import setup_jenkins
+from config.github_config import setup_github
+from config.argocd_config import setup_argocd
+from config.jenkins_pipeline import setup_pipelines
+
+
 def main():
-    print("🔥 Starting DevOps Automation Setup...\n")
+
+    print("🔥 DEVOPS FULL AUTOMATION STARTED\n")
+
+    # =====================================================
+    # 🔹 PHASE 1: INSTALLATION
+    # =====================================================
+    print("\n📦 PHASE 1: INSTALLATION\n")
 
     update_system()
     install_basic_tools()
@@ -19,7 +36,6 @@ def main():
 
     install_docker()
     fix_docker()
-
 
     install_kubernetes()
 
@@ -30,8 +46,39 @@ def main():
     install_trivy()
     install_argocd()
 
-    print("\n✅ ALL TOOLS INSTALLED SUCCESSFULLY!")
+    print("\n✅ INSTALLATION COMPLETED\n")
+
+    # =====================================================
+    # 🔹 PHASE 2: CONFIGURATION
+    # =====================================================
+    print("\n⚙️ PHASE 2: CONFIGURATION\n")
+
+    # 1️⃣ SonarQube FIRST (generates token)
+    sonar_token = setup_sonarqube()
+
+    # 2️⃣ Nexus (repo + credentials)
+    setup_nexus()
+
+    # 3️⃣ Jenkins (plugins + creds + tools)
+    setup_jenkins()
+
+    # 4️⃣ GitHub (webhooks)
+    setup_github()
+
+    # 5️⃣ ArgoCD (apps)
+    setup_argocd()
+
+    print("\n✅ CONFIGURATION COMPLETED\n")
+
+    # =====================================================
+    # 🔹 PHASE 3: PIPELINE SETUP
+    # =====================================================
+    print("\n🚀 PHASE 3: PIPELINE SETUP\n")
+
+    setup_pipelines()
+
+    print("\n🎉 FULL DEVOPS AUTOMATION COMPLETED SUCCESSFULLY!\n")
+
 
 if __name__ == "__main__":
     main()
-

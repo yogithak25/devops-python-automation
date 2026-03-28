@@ -10,11 +10,7 @@ def is_python_installed():
 
 
 def is_venv_created():
-    return os.path.exists("devops-env")
-
-
-def is_requirements_installed():
-    return os.path.exists("devops-env/lib")
+    return os.path.exists("devops-env/bin/python3")
 
 
 # -----------------------------
@@ -25,14 +21,16 @@ def install_python_env():
     print("\n🐍 Setting up Python Environment...\n")
 
     # -----------------------------
-    # 1. Install Python & tools
+    # 1. Install Python + venv (IMPORTANT)
     # -----------------------------
     if not is_python_installed():
-        print("Installing Python...")
+        print("📦 Installing Python...")
         run_command("sudo apt-get update")
         run_command("sudo apt-get install -y python3 python3-pip python3-venv")
     else:
         print("✅ Python already installed.")
+        # Still ensure venv exists
+        run_command("sudo apt-get install -y python3-pip python3-venv")
 
     # -----------------------------
     # 2. Create Virtual Environment
@@ -44,7 +42,14 @@ def install_python_env():
         print("✅ Virtual environment already exists.")
 
     # -----------------------------
-    # 3. Install Requirements
+    # 3. Validate venv creation
+    # -----------------------------
+    if not is_venv_created():
+        print("❌ Virtual environment creation failed!")
+        return
+
+    # -----------------------------
+    # 4. Install Requirements
     # -----------------------------
     if os.path.exists("requirements.txt"):
         print("📥 Installing Python dependencies...")
@@ -52,6 +57,7 @@ def install_python_env():
         run_command("""
         bash -c 'source devops-env/bin/activate && pip install -r requirements.txt'
         """)
+
     else:
         print("⚠️ requirements.txt not found. Skipping...")
 

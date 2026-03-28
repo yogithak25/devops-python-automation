@@ -9,10 +9,6 @@ def is_k8s_initialized():
     return os.path.exists("/etc/kubernetes/admin.conf")
 
 
-def is_containerd_installed():
-    return os.system("containerd --version > /dev/null 2>&1") == 0
-
-
 def is_k8s_installed():
     return os.system("kubectl version --client > /dev/null 2>&1") == 0
 
@@ -51,9 +47,6 @@ def prepare_environment():
 def install_containerd():
     print("\n📦 Installing Containerd...\n")
 
-    if is_containerd_installed():
-        print("✅ containerd already installed.")
-        return
 
     run_command("sudo apt-get update")
     run_command("sudo apt-get install -y containerd")
@@ -146,7 +139,7 @@ def wait_for_api_server():
             print("✅ API Server Ready")
             return
         print(f"Waiting... ({i+1}/20)")
-        run_command("sleep 5")
+        run_command("sleep 30")
 
 
 # -----------------------------
@@ -157,8 +150,9 @@ def install_network():
 
     # Apply only once (safe anyway)
     run_command("""
-    kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/v0.25.5/Documentation/kube-flannel.yml
+    kubectl apply --validate=false -f https://raw.githubusercontent.com/flannel-io/flannel/v0.25.5/Documentation/kube-flannel.yml
     """)
+    run_command("sleep 30")
 
     run_command("sudo systemctl restart containerd")
     run_command("sudo systemctl restart kubelet")
