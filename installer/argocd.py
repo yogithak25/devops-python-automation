@@ -14,6 +14,17 @@ def is_argocd_installed():
 
 
 # -----------------------------
+# GET CURRENT NODEPORT
+# -----------------------------
+def get_nodeport():
+    output = os.popen(
+        "kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null"
+    ).read().strip()
+
+    return output.replace("'", "")
+
+
+# -----------------------------
 # CHECK: Service Type
 # -----------------------------
 def is_nodeport():
@@ -44,23 +55,40 @@ def wait_for_argocd():
 
 
 # -----------------------------
-# EXPOSE SERVICE
+# EXPOSE SERVICE (FIXED NODEPORT)
 # -----------------------------
 def expose_argocd():
-    print("\n🌐 Checking ArgoCD Service Type...\n")
 
-    if is_nodeport():
-        print("✅ ArgoCD already exposed via NodePort. Skipping...")
+    FIXED_PORT = "32574"
+
+    print("\n🌐 Configuring ArgoCD NodePort...\n")
+
+    current_port = get_nodeport()
+
+    # Already correct → skip
+    if is_nodeport() and current_port == FIXED_PORT:
+        print(f"✅ ArgoCD already using NodePort {FIXED_PORT}. Skipping...")
         return
 
-    print("🔧 Converting ArgoCD service to NodePort...")
+    print("🔧 Setting NodePort to 32574...")
 
-    run_command("""
-    kubectl patch svc argocd-server -n argocd \
-    -p '{"spec": {"type": "NodePort"}}'
+    run_command(f"""
+    kubectl patch svc argocd-server -n argocd --type='merge' -p '
+    {{
+      "spec": {{
+        "type": "NodePort",
+        "ports": [
+          {{
+            "port": 80,
+            "targetPort": 8080,
+            "nodePort": {FIXED_PORT}
+          }}
+        ]
+      }}
+    }}'
     """)
 
-    print("✅ ArgoCD exposed via NodePort!")
+    print(f"✅ ArgoCD exposed at NodePort {FIXED_PORT}")
 
 
 # -----------------------------
@@ -70,10 +98,10 @@ def install_argocd():
 
     print("\n🚀 Installing ArgoCD...\n")
 
-    # Ensure namespace exists
+    # Namespace
     run_command("kubectl get ns argocd || kubectl create ns argocd")
 
-    # Install if not exists
+    # Install
     if not is_argocd_installed():
 
         print("📦 Applying ArgoCD manifests...")
@@ -88,10 +116,10 @@ def install_argocd():
     else:
         print("✅ ArgoCD already installed.")
 
-    # Expose service
+    # Fix NodePort
     expose_argocd()
 
-    # Show service details
+    # Show service
     print("\n🔎 ArgoCD Service Info:\n")
     run_command("kubectl get svc argocd-server -n argocd")
 
